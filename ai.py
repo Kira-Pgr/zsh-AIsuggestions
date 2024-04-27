@@ -2,7 +2,7 @@ import requests
 import sys
 
 def get_suggestion(user_input):
-    url = "http://nekorevo:11434/api/generate"
+    url = "http://ollama-endpoint:11434/api/generate"
     headers = {"Content-Type": "application/json"}
     attempts = 3  # Number of attempts to get a valid suggestion
 
