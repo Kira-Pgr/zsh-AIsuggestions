@@ -43,7 +43,10 @@ typeset -g ZSH_AUTOSUGGEST_ORIGINAL_WIDGET_PREFIX=autosuggest-orig-
 # Will try each strategy in order until a suggestion is returned
 (( ! ${+ZSH_AUTOSUGGEST_STRATEGY} )) && {
 	typeset -ga ZSH_AUTOSUGGEST_STRATEGY
-	ZSH_AUTOSUGGEST_STRATEGY=(history)
+	ZSH_AUTOSUGGEST_STRATEGY=(
+		history
+		fixed
+	)
 }
 
 # Widgets that clear the suggestion
@@ -628,6 +631,27 @@ _zsh_autosuggest_strategy_completion() {
 		zpty -d $ZSH_AUTOSUGGEST_COMPLETIONS_PTY_NAME
 	}
 }
+#--------------------------------------------------------------------#
+# Fixed Command Suggestion Strategy                                  #
+#--------------------------------------------------------------------#
+# Always suggests a fixed command regardless of the input.
+#
+
+_zsh_autosuggest_strategy_fixed() {
+    # Reset options to defaults and enable LOCAL_OPTIONS
+	emulate -L zsh
+
+	# Enable globbing flags so that we can use (#m) and (x~y) glob operator
+	setopt EXTENDED_GLOB
+    local user_input="$1"
+    escaped_input=$(echo "$user_input" | sed 's/[\x01-\x1F\x7F]/\\&/g')
+
+    # Use the Python script to get the suggestion
+    local suggestion=$(python3 ai.py "$escaped_input")
+
+	echo $suggestion
+	typeset -g suggestion="$suggestion"
+}
 
 #--------------------------------------------------------------------#
 # History Suggestion Strategy                                        #
@@ -747,7 +771,7 @@ _zsh_autosuggest_fetch_suggestion() {
 		_zsh_autosuggest_strategy_$strategy "$1"
 
 		# Ensure the suggestion matches the prefix
-		[[ "$suggestion" != "$1"* ]] && unset suggestion
+		#[[ "$suggestion" != "$1"* ]] && unset suggestion
 
 		# Break once we've found a valid suggestion
 		[[ -n "$suggestion" ]] && break
