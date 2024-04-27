@@ -1,4 +1,4 @@
-# oh-my-llm
+# oh-my-lm
 zsh auto suggestions using ollama
 
 ## how to use
